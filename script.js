@@ -48,7 +48,8 @@ function getCursorPosition(e) {
     context.fillStyle = colors[cell.row % colors.length];
     if (colors.indexOf(cell.color) == -1) {
       context.fillRect(cell.column*pieceWidth+1, cell.row*pieceHeight+1, pieceWidth-1, pieceHeight-1);
-      keys.get(notes[cell.row % notes.length]).start();
+      if (!started)
+        keys.get(notes[cell.row % notes.length]).start();
       matrix[cell.column][cell.row] = 1;
     } else {
       context.clearRect(cell.column*pieceWidth+1, cell.row*pieceHeight+1, pieceWidth-1, pieceHeight-1);
@@ -69,7 +70,7 @@ function getCursorPosition(e) {
       /* horizontal lines */
       for (var y = 0; y <= height; y += pieceHeight) {
   	     context.moveTo(0, 0.5 + y);
-  	      context.lineTo(width, 0.5 +  y);
+  	     context.lineTo(width, 0.5 +  y);
       }
       /* draw it! */
       context.strokeStyle = "#ccc";
@@ -97,7 +98,6 @@ function getCursorPosition(e) {
       "E" : "https://raw.githubusercontent.com/Tonejs/Tone.js/master/examples/audio/casio/E2.[mp3|ogg]",
       "F" : "https://raw.githubusercontent.com/Tonejs/Tone.js/master/examples/audio/casio/F2.[mp3|ogg]",
       "G" : "https://raw.githubusercontent.com/Tonejs/Tone.js/master/examples/audio/casio/G2.[mp3|ogg]"
-
 		}).toMaster();
     loop = new Tone.Sequence(function (time, col) {
       var column = matrix[col];
@@ -108,7 +108,7 @@ function getCursorPosition(e) {
     }, Array.apply(null, {length: canvasWidth}).map(Function.call, Number));
 
     Tone.Transport.start();
-    Tone.Transport.bpm.value = 60;
+    //Tone.Transport.bpm.value = 60;
 
     $( "#startStopBtn" ).click(function() {
       if (started) {
@@ -120,7 +120,14 @@ function getCursorPosition(e) {
           $( "#startStopBtn" ).text("Stop");
           started = true;
       }
-
+    });
+    $("#bpmSlider").slider({
+      value: 120,
+      min: 20,
+      max: 160,
+      slide: function (e, u) {
+        Tone.Transport.bpm.value = u.value;
+      }
     });
   }
 
