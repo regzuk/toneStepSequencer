@@ -1,6 +1,6 @@
 (function(){
   var canvasWidth = 16;
-  var canvasHeight= 8;
+  var canvasHeight= 7;
   var pieceWidth = 60;
   var pieceHeight= 40;
   var width = 1 + (canvasWidth * pieceWidth);
@@ -9,8 +9,11 @@
   var canvas, context;
   var colors = ["#ff0000", "#00ff00", "#0000ff", "#555555"];
 
-  var synth = new Tone.AMSynth().toMaster();
-  var notes = ["C4", "E4", "G4", "B4"];
+  var notes;
+  var loop, matrix;
+  var keys;
+
+  var started = false;
 
   function Cell(row, column, color) {
     this.row = row;
@@ -42,13 +45,15 @@ function getCursorPosition(e) {
 
   function canvasOnClick (e) {
     var cell = getCursorPosition(e);
-    // var context = canvas.getContext("2d");
     context.fillStyle = colors[cell.row % colors.length];
     if (colors.indexOf(cell.color) == -1) {
       context.fillRect(cell.column*pieceWidth+1, cell.row*pieceHeight+1, pieceWidth-1, pieceHeight-1);
-      synth.triggerAttackRelease(notes[cell.row % notes.length], 0.5, 0)
-    } else
+      keys.get(notes[cell.row % notes.length]).start();
+      matrix[cell.column][cell.row] = 1;
+    } else {
       context.clearRect(cell.column*pieceWidth+1, cell.row*pieceHeight+1, pieceWidth-1, pieceHeight-1);
+      matrix[cell.column][cell.row] = 0;
+    }
   }
 
   function drawBoard() {
@@ -78,7 +83,45 @@ function getCursorPosition(e) {
     canvas.height = height;
     canvas.addEventListener("click", canvasOnClick, false);
     drawBoard();
-    var a = 1;
+    matrix = new Array(canvasWidth);
+    for (var i = 0; i < canvasWidth; i++) {
+      matrix[i] = new Array(canvasHeight);
+      matrix[i].fill(0);
+    }
+    notes = ["B", "C", "D", "E", "F", "G", "A"];
+    keys = new Tone.Players({
+			"A" : "https://raw.githubusercontent.com/Tonejs/Tone.js/master/examples/audio/casio/A2.[mp3|ogg]",
+      "B" : "https://raw.githubusercontent.com/Tonejs/Tone.js/master/examples/audio/casio/B1.[mp3|ogg]",
+      "C" : "https://raw.githubusercontent.com/Tonejs/Tone.js/master/examples/audio/casio/C2.[mp3|ogg]",
+      "D" : "https://raw.githubusercontent.com/Tonejs/Tone.js/master/examples/audio/casio/D2.[mp3|ogg]",
+      "E" : "https://raw.githubusercontent.com/Tonejs/Tone.js/master/examples/audio/casio/E2.[mp3|ogg]",
+      "F" : "https://raw.githubusercontent.com/Tonejs/Tone.js/master/examples/audio/casio/F2.[mp3|ogg]",
+      "G" : "https://raw.githubusercontent.com/Tonejs/Tone.js/master/examples/audio/casio/G2.[mp3|ogg]"
+
+		}).toMaster();
+    loop = new Tone.Sequence(function (time, col) {
+      var column = matrix[col];
+      for (var j = 0; j < canvasHeight; j++) {
+        if (column[j] === 1)
+          keys.get(notes[j % notes.length]).start();
+      }
+    }, Array.apply(null, {length: canvasWidth}).map(Function.call, Number));
+
+    Tone.Transport.start();
+    Tone.Transport.bpm.value = 60;
+
+    $( "#startStopBtn" ).click(function() {
+      if (started) {
+          loop.stop();
+          $( "#startStopBtn" ).text("Start");
+          started = false;
+      } else {
+          loop.start();
+          $( "#startStopBtn" ).text("Stop");
+          started = true;
+      }
+
+    });
   }
 
   init();
