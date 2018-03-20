@@ -9,6 +9,9 @@
   var canvas, context;
   var colors = ["#ff0000", "#00ff00", "#0000ff", "#555555"];
 
+  var synth = new Tone.AMSynth().toMaster();
+  var notes = ["C4", "E4", "G4", "B4"];
+
   function Cell(row, column, color) {
     this.row = row;
     this.column = column;
@@ -20,8 +23,8 @@ function getCursorPosition(e) {
     var x;
     var y;
     if (e.pageX != undefined && e.pageY != undefined) {
-	x = e.pageX;
-	y = e.pageY;
+	     x = e.pageX;
+	      y = e.pageY;
     }
     else {
 	x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
@@ -41,9 +44,10 @@ function getCursorPosition(e) {
     var cell = getCursorPosition(e);
     // var context = canvas.getContext("2d");
     context.fillStyle = colors[cell.row % colors.length];
-    if (colors.indexOf(cell.color) == -1)
+    if (colors.indexOf(cell.color) == -1) {
       context.fillRect(cell.column*pieceWidth+1, cell.row*pieceHeight+1, pieceWidth-1, pieceHeight-1);
-    else
+      synth.triggerAttackRelease(notes[cell.row % notes.length], 0.5, 0)
+    } else
       context.clearRect(cell.column*pieceWidth+1, cell.row*pieceHeight+1, pieceWidth-1, pieceHeight-1);
   }
 
