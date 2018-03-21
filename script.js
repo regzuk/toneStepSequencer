@@ -75,6 +75,36 @@
       /* draw it! */
       context.strokeStyle = "#ccc";
       context.stroke();
+
+      for (var i = 0; i < canvasWidth; i++)
+        for (var j = 0; j < canvasHeight; j++) {
+          if (matrix[i][j] === 1) {
+            context.fillStyle = colors[j % colors.length];
+            context.fillRect(i*pieceWidth+1, j*pieceHeight+1, pieceWidth-1, pieceHeight-1);
+          }
+        }
+  }
+  function moveRect (col) {
+
+    var prCol = (col > 0) ? col - 1 : canvasWidth - 1;
+
+    context.clearRect(prCol*pieceWidth+1, 1, pieceWidth-1, height-1);
+
+    context.beginPath();
+    for (var j = 0; j < canvasHeight; j++) {
+      context.moveTo(prCol * pieceWidth, 0.5 + (j + 1) * pieceHeight);
+      context.lineTo((prCol + 1) * pieceWidth, 0.5 +  (j + 1) * pieceHeight);
+      if (matrix[prCol][j] === 1) {
+        context.fillStyle = colors[j % colors.length];
+        context.fillRect(prCol*pieceWidth+1, j*pieceHeight+1, pieceWidth-1, pieceHeight-1);
+      }
+    }
+
+    context.strokeStyle = "#ccc";
+    context.stroke();
+
+    context.fillStyle = "rgba(255, 255, 0, 0.2)";
+    context.fillRect(col*pieceWidth+1, 1, pieceWidth-1, height-1);
   }
 
   function init () {
@@ -83,12 +113,13 @@
     canvas.width = width;
     canvas.height = height;
     canvas.addEventListener("click", canvasOnClick, false);
-    drawBoard();
+
     matrix = new Array(canvasWidth);
     for (var i = 0; i < canvasWidth; i++) {
       matrix[i] = new Array(canvasHeight);
       matrix[i].fill(0);
     }
+    drawBoard();
     notes = ["B", "C", "D", "E", "F", "G", "A"];
     keys = new Tone.Players({
 			"A" : "https://raw.githubusercontent.com/Tonejs/Tone.js/master/examples/audio/casio/A2.[mp3|ogg]",
@@ -101,6 +132,7 @@
 		}).toMaster();
     loop = new Tone.Sequence(function (time, col) {
       var column = matrix[col];
+      moveRect(col);
       for (var j = 0; j < canvasHeight; j++) {
         if (column[j] === 1)
           keys.get(notes[j % notes.length]).start();
@@ -115,6 +147,7 @@
           loop.stop();
           $( "#startStopBtn" ).text("Start");
           started = false;
+          drawBoard();
       } else {
           loop.start();
           $( "#startStopBtn" ).text("Stop");
