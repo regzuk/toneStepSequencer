@@ -19,9 +19,9 @@
     this.row = row;
     this.column = column;
     this.color = color;
-}
+  }
 
-function getCursorPosition(e) {
+  function getCursorPosition(e) {
     /* returns Cell with .row and .column properties */
     var x;
     var y;
@@ -41,7 +41,7 @@ function getCursorPosition(e) {
     var cell = new Cell(Math.floor(y/pieceHeight), Math.floor(x/pieceWidth),
         "#"+("000000" + ((c[0] << 16) | (c[1] << 8) | c[2]).toString(16)).slice(-6));
     return cell;
-}
+  }
 
   function canvasOnClick (e) {
     var cell = getCursorPosition(e);
@@ -119,14 +119,6 @@ function getCursorPosition(e) {
           loop.start();
           $( "#startStopBtn" ).text("Stop");
           started = true;
-      }
-    });
-    $("#bpmSlider").slider({
-      value: 120,
-      min: 20,
-      max: 160,
-      slide: function (e, u) {
-        Tone.Transport.bpm.value = u.value;
       }
     });
   }
