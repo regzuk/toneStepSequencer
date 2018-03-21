@@ -6,7 +6,7 @@
   var width = 1 + (canvasWidth * pieceWidth);
   var height= 1 + (canvasHeight * pieceHeight);
 
-  var canvas, context;
+  var canvas, note_canvas, context;
   var colors = ["#ff0000", "#00ff00", "#0000ff", "#555555"];
 
   var notes;
@@ -58,10 +58,12 @@
   }
 
   function drawBoard() {
-    // var context = canvas.getContext("2d");
+     var note_context = note_canvas.getContext("2d");
     context.clearRect(0, 0, width, height);
 
       context.beginPath();
+      note_context.beginPath();
+
       /* vertical lines */
       for (var x = 0; x <= width; x += pieceWidth) {
   	     context.moveTo(0.5 + x, 0);
@@ -71,10 +73,19 @@
       for (var y = 0; y <= height; y += pieceHeight) {
   	     context.moveTo(0, 0.5 + y);
   	     context.lineTo(width, 0.5 +  y);
+
+         note_context.moveTo(0, 0.5 + y);
+         note_context.lineTo(pieceWidth, 0.5 +  y);
+      }
+      note_context.font = "20px Arial";
+      for (var k = 0; k < canvasHeight; k++) {
+        note_context.fillText(notes[k], pieceWidth * 0.4, (k + 0.7) * pieceHeight);
       }
       /* draw it! */
       context.strokeStyle = "#ccc";
       context.stroke();
+      note_context.strokeStyle = "#ccc";
+      note_context.stroke();
 
       for (var i = 0; i < canvasWidth; i++)
         for (var j = 0; j < canvasHeight; j++) {
@@ -108,7 +119,10 @@
   }
 
   function init () {
-    canvas = document.getElementById("note_canvas");
+    note_canvas = document.getElementById("notes");
+    note_canvas.width = pieceWidth;
+    note_canvas.height = height;
+    canvas = document.getElementById("canvas");
     context = canvas.getContext("2d");
     canvas.width = width;
     canvas.height = height;
@@ -119,7 +133,7 @@
       matrix[i] = new Array(canvasHeight);
       matrix[i].fill(0);
     }
-    drawBoard();
+
     notes = ["B", "C", "D", "E", "F", "G", "A"];
     keys = new Tone.Players({
 			"A" : "https://raw.githubusercontent.com/Tonejs/Tone.js/master/examples/audio/casio/A2.[mp3|ogg]",
@@ -141,6 +155,8 @@
 
     Tone.Transport.start();
     //Tone.Transport.bpm.value = 60;
+
+    drawBoard();
 
     $( "#startStopBtn" ).click(function() {
       if (started) {
